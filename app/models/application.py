@@ -14,3 +14,4 @@ class Application(Base):
         String(50),
         default="applied",
     )
+    location: Mapped[str] = mapped_column(String(255))
