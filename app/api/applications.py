@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
+from app.core.dependencies import get_current_user
 from app.db.database import get_db
+from app.models.user import User
 from app.models.application import Application
 from app.schemas.application import (
     ApplicationCreate,
@@ -17,6 +19,7 @@ router = APIRouter(prefix="/applications", tags=["applications"])
 def create_application(
     application: ApplicationCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     new_application = Application(
         company=application.company,
@@ -32,7 +35,7 @@ def create_application(
 
 @router.get("/", response_model=list[ApplicationResponse])
 def list_applications(
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
     applications = db.scalars(select(Application)).all()
 
@@ -43,6 +46,7 @@ def list_applications(
 def get_application(
     application_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     application = db.scalar(select(Application).where(Application.id == application_id))
 
@@ -63,6 +67,7 @@ def update_application(
     application_id: int,
     application_data: ApplicationUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     application = db.scalar(select(Application).where(Application.id == application_id))
 
@@ -90,6 +95,7 @@ def update_application(
 def delete_application(
     application_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     application = db.scalar(select(Application).where(Application.id == application_id))
 

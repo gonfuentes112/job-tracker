@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     postgres_host: str = "localhost"
     postgres_port: int = 5432
 
+    secret_key: str
+
     model_config = SettingsConfigDict(env_file=".env")
 
     @property
@@ -20,4 +22,4 @@ class Settings(BaseSettings):
         )
 
 
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]
