@@ -1,16 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import select
 
 from app.core.dependencies import get_current_user
 from app.db.database import get_db
 from app.models.user import User
-from app.models.application import Application
+
 from app.schemas.application import (
     ApplicationCreate,
     ApplicationResponse,
     ApplicationUpdate,
 )
+from app.services import application_service
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 
@@ -21,29 +21,14 @@ def create_application(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    new_application = Application(
-        company=application.company,
-        role=application.role,
-        location=application.location,
-        user_id=current_user.id,
-    )
-
-    db.add(new_application)
-    db.commit()
-    db.refresh(new_application)
-
-    return new_application
+    return application_service.create_application(application, db, current_user)
 
 
 @router.get("/", response_model=list[ApplicationResponse])
 def list_applications(
     db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
-    applications = db.scalars(
-        select(Application).where(Application.user_id == current_user.id)
-    ).all()
-
-    return applications
+    return application_service.list_applications(db, current_user)
 
 
 @router.get("/{application_id}", response_model=ApplicationResponse)
@@ -52,19 +37,7 @@ def get_application(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    application = db.scalar(
-        select(Application).where(
-            Application.id == application_id, Application.user_id == current_user.id
-        )
-    )
-
-    if application is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Application not found",
-        )
-
-    return application
+    return application_service.get_application(application_id, db, current_user)
 
 
 @router.patch(
@@ -77,27 +50,9 @@ def update_application(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    application = db.scalar(
-        select(Application).where(
-            Application.id == application_id, Application.user_id == current_user.id
-        )
+    return application_service.update_application(
+        application_id, application_data, db, current_user
     )
-
-    if application is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Application not found",
-        )
-
-    update_data = application_data.model_dump(exclude_unset=True)
-
-    for field, value in update_data.items():
-        setattr(application, field, value)
-
-    db.commit()
-    db.refresh(application)
-
-    return application
 
 
 @router.delete(
@@ -109,19 +64,4 @@ def delete_application(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    application = db.scalar(
-        select(Application).where(
-            Application.id == application_id, Application.user_id == current_user.id
-        )
-    )
-
-    if application is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Application not found",
-        )
-
-    db.delete(application)
-    db.commit()
-
-    return {"message": "Application deleted"}
+    return application_service.delete_application(application_id, db, current_user)

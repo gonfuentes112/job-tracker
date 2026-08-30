@@ -3,24 +3,23 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
-from alembic import context
+from alembic import context  # type: ignore
 
 from app.db.base import Base
-from app.models.application import Application
-from app.models.user import User
+from app.models.user import User  # type: ignore
 
 from app.core.config import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
-config = context.config
+config = context.config  # type: ignore
 
-config.set_main_option("sqlalchemy.url", settings.database_url)
+config.set_main_option("sqlalchemy.url", settings.database_url)  # type: ignore
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+if config.config_file_name is not None:  # type: ignore
+    fileConfig(config.config_file_name)  # type: ignore
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -46,16 +45,16 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
-    context.configure(
+    url = config.get_main_option("sqlalchemy.url")  # type: ignore
+    context.configure(  # type: ignore
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
     )
 
-    with context.begin_transaction():
-        context.run_migrations()
+    with context.begin_transaction():  # type: ignore
+        context.run_migrations()  # type: ignore
 
 
 def run_migrations_online() -> None:
@@ -66,19 +65,19 @@ def run_migrations_online() -> None:
 
     """
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        config.get_section(config.config_ini_section, {}),  # type: ignore
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(connection=connection, target_metadata=target_metadata)  # type: ignore
 
-        with context.begin_transaction():
-            context.run_migrations()
+        with context.begin_transaction():  # type: ignore
+            context.run_migrations()  # type: ignore
 
 
-if context.is_offline_mode():
+if context.is_offline_mode():  # type: ignore
     run_migrations_offline()
 else:
     run_migrations_online()
