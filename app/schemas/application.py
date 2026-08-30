@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field, ConfigDict
 class ApplicationCreate(BaseModel):
     company: str = Field(min_length=1, max_length=255)
     role: str = Field(min_length=1, max_length=255)
+    location: str = Field(min_length=1, max_length=255)
 
 
 class ApplicationUpdate(BaseModel):
@@ -22,6 +23,11 @@ class ApplicationUpdate(BaseModel):
         min_length=1,
         max_length=50,
     )
+    location: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=255,
+    )
 
 
 class ApplicationResponse(BaseModel):
@@ -29,5 +35,6 @@ class ApplicationResponse(BaseModel):
     company: str
     role: str
     status: str
+    location: str
 
     model_config = ConfigDict(from_attributes=True)

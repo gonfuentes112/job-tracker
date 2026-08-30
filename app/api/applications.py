@@ -24,6 +24,8 @@ def create_application(
     new_application = Application(
         company=application.company,
         role=application.role,
+        location=application.location,
+        user_id=current_user.id,
     )
 
     db.add(new_application)
@@ -37,7 +39,9 @@ def create_application(
 def list_applications(
     db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
-    applications = db.scalars(select(Application)).all()
+    applications = db.scalars(
+        select(Application).where(Application.user_id == current_user.id)
+    ).all()
 
     return applications
 
@@ -48,7 +52,11 @@ def get_application(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    application = db.scalar(select(Application).where(Application.id == application_id))
+    application = db.scalar(
+        select(Application).where(
+            Application.id == application_id, Application.user_id == current_user.id
+        )
+    )
 
     if application is None:
         raise HTTPException(
@@ -69,7 +77,11 @@ def update_application(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    application = db.scalar(select(Application).where(Application.id == application_id))
+    application = db.scalar(
+        select(Application).where(
+            Application.id == application_id, Application.user_id == current_user.id
+        )
+    )
 
     if application is None:
         raise HTTPException(
@@ -97,7 +109,11 @@ def delete_application(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    application = db.scalar(select(Application).where(Application.id == application_id))
+    application = db.scalar(
+        select(Application).where(
+            Application.id == application_id, Application.user_id == current_user.id
+        )
+    )
 
     if application is None:
         raise HTTPException(
