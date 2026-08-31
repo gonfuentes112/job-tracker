@@ -1,11 +1,9 @@
 from fastapi import FastAPI
 from app.api.applications import router as applications_router
 from app.api.auth import router as auth_router
-from app.core.config import settings
-from app.schemas.application import (
-    ApplicationCreate,
-    ApplicationResponse,
-)
+
+from sqlalchemy import text
+from app.db.database import engine
 
 app = FastAPI()
 
@@ -15,21 +13,10 @@ app.include_router(auth_router)
 
 @app.get("/health")
 def health_check():
+    with engine.connect() as connection:
+        connection.execute(text("SELECT 1"))
+
     return {
         "status": "ok",
-        "database": settings.postgres_db,
+        "database": "ok",
     }
-
-
-@app.post(
-    "/applications",
-    response_model=ApplicationResponse,
-)
-def create_application(
-    application: ApplicationCreate,
-):
-    pass
-
-
-# if __name__ == "__main__":
-#     main()
