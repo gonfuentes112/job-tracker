@@ -6,7 +6,11 @@ from app.core.security import hash_password, create_access_token, verify_passwor
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-def register(user_data: UserCreate, db: Session):
+from app.models.user import User
+from app.schemas.user import UserCreate
+
+
+def register(user_data: UserCreate, db: Session) -> User:
     existing_user = db.scalar(select(User).where(User.email == user_data.email))
 
     if existing_user is not None:
@@ -21,6 +25,7 @@ def register(user_data: UserCreate, db: Session):
     db.refresh(user)
 
     return user
+
 
 def login(form_data: OAuth2PasswordRequestForm, db: Session):
     user = db.scalar(select(User).where(User.email == form_data.username))
