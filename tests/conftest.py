@@ -8,6 +8,9 @@ from app.core.dependencies import get_db
 from app.db.base import Base
 from app.core.config import settings
 
+if settings.test_database_url is None:
+    raise RuntimeError("TEST_DATABASE_URL is not configured")
+
 test_engine = create_engine(
     settings.test_database_url,
 )
