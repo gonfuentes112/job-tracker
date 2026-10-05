@@ -72,8 +72,10 @@ def registered_user(client, user_data):
     )
 
     assert response.status_code == 200
+    user = response.json()
+    user["password"] = user_data["password"]
 
-    return user_data
+    return user
 
 
 @pytest.fixture

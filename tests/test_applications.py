@@ -4,12 +4,6 @@ def test_list_applications_requires_auth(client):
     assert response.status_code == 401
 
 
-def test_list_applications_requires_auth(client):
-    response = client.get("/applications/")
-
-    assert response.status_code == 401
-
-
 def test_list_applications(client, auth_headers):
     client.post(
         "/applications/",
@@ -138,3 +132,89 @@ def test_users_only_see_their_own_applications(
     assert len(applications) == 1
     assert applications[0]["company"] == "Microsoft"
     assert applications[0]["role"] == "Backend Engineer"
+
+
+def test_user_cannot_update_another_users_application(
+    client,
+    auth_headers,
+    second_auth_headers,
+):
+    response = client.post(
+        "/applications/",
+        json={
+            "company": "Google",
+            "role": "Engineer",
+            "location": "Tokyo",
+        },
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+
+    application_id = response.json()["id"]
+
+    response = client.patch(
+        f"/applications/{application_id}",
+        json={
+            "company": "Hacked Company",
+        },
+        headers=second_auth_headers,
+    )
+
+    assert response.status_code == 404
+
+
+def test_user_cannot_delete_another_users_application(
+    client,
+    auth_headers,
+    second_auth_headers,
+):
+    response = client.post(
+        "/applications/",
+        json={
+            "company": "Google",
+            "role": "Engineer",
+            "location": "Tokyo",
+        },
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+
+    application_id = response.json()["id"]
+
+    response = client.delete(
+        f"/applications/{application_id}",
+        headers=second_auth_headers,
+    )
+
+    assert response.status_code == 404
+
+
+def test_create_application_rejects_oversized_company(
+    client,
+    auth_headers,
+):
+    response = client.post(
+        "/applications/",
+        json={
+            "company": "A" * 256,
+            "role": "Software Engineer",
+            "location": "Tokyo",
+        },
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 422
+
+
+def test_login_rejects_sql_injection_attempt(client):
+    response = client.post(
+        "/auth/login",
+        data={
+            "username": "' OR '1'='1",
+            "password": "password123",
+        },
+    )
+
+    assert response.status_code == 401

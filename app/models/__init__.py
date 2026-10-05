@@ -1,1 +1,1 @@
-from app.models.application import Application
+from app.models.application import Application as Application

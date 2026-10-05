@@ -32,7 +32,12 @@ def get_current_user(
     if user_id is None:
         raise credentials_exception
 
-    user = db.scalar(select(User).where(User.id == int(user_id)))
+    try:
+        user_id = int(user_id)
+    except (TypeError, ValueError):
+        raise credentials_exception
+
+    user = db.scalar(select(User).where(User.id == user_id))
 
     if user is None:
         raise credentials_exception
